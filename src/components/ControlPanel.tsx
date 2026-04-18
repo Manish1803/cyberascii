@@ -111,7 +111,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ options, setOptions 
           backdrop-filter: blur(12px);
           border-top: 2px solid var(--neon-primary);
           box-shadow: 0 -10px 30px rgba(0, 255, 65, 0.15);
-          padding: 24px 40px 48px 40px;
+          padding: 24px 40px 40px 40px;
           display: flex;
           justify-content: space-around;
           align-items: flex-start;
@@ -156,7 +156,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ options, setOptions 
         .cyber-input-label {
           font-family: var(--font-ui);
           font-size: 11px;
-          color: var(--text-dim);
+          color: var(--text-primary);
           text-transform: uppercase;
           letter-spacing: 0.1em;
         }

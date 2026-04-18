@@ -74,7 +74,7 @@ export const NeuralPanel: React.FC<NeuralPanelProps> = ({ aiMode, faceDetected }
         }
         .label {
           font-size: 9px;
-          color: var(--text-dim);
+          color: var(--text-primary);
           letter-spacing: 0.1em;
           text-transform: uppercase;
         }
