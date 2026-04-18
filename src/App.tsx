@@ -10,14 +10,17 @@ function App() {
     contrast: 1.0,
     charset: ' .:-=+*#%@',
     mode: 'Matrix',
+    aiMode: false,
   });
+
+  const [faceDetected, setFaceDetected] = useState(false);
 
   return (
     <div className="app-container">
-      <NeuralPanel />
+      <NeuralPanel aiMode={options.aiMode} faceDetected={faceDetected} />
       
       <main className="content">
-        <ASCIICameraView options={options} />
+        <ASCIICameraView options={options} onFaceDetect={setFaceDetected} />
       </main>
 
       <ControlPanel options={options} setOptions={setOptions} />
@@ -26,7 +29,7 @@ function App() {
         .app-container {
           display: flex;
           flex-direction: column;
-          height: 100vh;
+          height: 100dvh;
           overflow: hidden;
         }
         .content {
@@ -35,6 +38,7 @@ function App() {
           flex-direction: column;
           background: var(--void);
           position: relative;
+          min-height: 0; /* Important: Allows flex child to shrink */
         }
       `}</style>
     </div>
