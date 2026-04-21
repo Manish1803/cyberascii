@@ -77,6 +77,15 @@ function App() {
     };
 
     loadSystems();
+    
+    // Check for room ID in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomFromUrl = urlParams.get('room');
+    if (roomFromUrl) {
+      setRoomId(roomFromUrl);
+      // We don't auto-join here to avoid camera race conditions, 
+      // but the UI will show we are pre-linked to this room.
+    }
 
     // Setup Multiplayer listeners
     multiplayerRef.current!.onStatusChange = (status) => setMultiplayerStatus(status);

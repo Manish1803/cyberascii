@@ -31,7 +31,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onMultiplayerAction,
   onDisconnect
 }) => {
-  const [inputRoomId, setInputRoomId] = useState('');
+  const [inputRoomId, setInputRoomId] = useState(activeRoomId || '');
+  const [copied, setCopied] = useState(false);
   
   const charsets = {
     Classic: ' .:-=+*#%@',
@@ -51,6 +52,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     const id = type === 'CREATE' ? Math.random().toString(36).substring(7).toUpperCase() : inputRoomId;
     if (type === 'JOIN' && !inputRoomId) return;
     onMultiplayerAction(type, id);
+  };
+
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}?room=${activeRoomId}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -124,13 +132,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <div className="multiplayer-status-box">
                 <div className="room-info">ROOM: <span className="room-id-text">{activeRoomId}</span></div>
                 <div className="status-badge">{multiplayerStatus}</div>
-                <button 
-                  className="btn btn-danger btn-compact" 
-                  style={{ marginTop: '4px', width: '100%' }}
-                  onClick={onDisconnect}
-                >
-                  DISCONNECT
-                </button>
+                <div className="multi-btn-row" style={{ marginTop: '8px' }}>
+                  <button 
+                    className={`btn ${copied ? 'btn-primary' : 'btn-ghost'} btn-compact`} 
+                    onClick={handleCopyLink}
+                  >
+                    {copied ? 'COPIED!' : 'COPY LINK'}
+                  </button>
+                  <button 
+                    className="btn btn-danger btn-compact" 
+                    onClick={onDisconnect}
+                  >
+                    DISCONNECT
+                  </button>
+                </div>
               </div>
             )}
           </div>
