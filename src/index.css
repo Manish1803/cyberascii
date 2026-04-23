@@ -230,7 +230,7 @@ body::after {
   justify-content: center;
   align-items: center;
   flex: 1;
-  min-height: 0; /* Prevents encroaching on the Control Dock */
+  min-height: 0;
 }
 
 .ascii-render {
@@ -484,12 +484,13 @@ body::after {
 .render-item {
   flex: 1;
   position: relative;
-  background: var(--void);
+  background: var(--abyss);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  min-height: 0;
 }
 
 .render-label {

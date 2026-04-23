@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { ASCIIEngine } from '../modules/ASCIIEngine';
 import { AIEngine } from '../modules/AIEngine';
 
@@ -17,13 +17,13 @@ interface ASCIICameraViewProps {
   remoteStream: MediaStream | null;
 }
 
-export const ASCIICameraView: React.FC<ASCIICameraViewProps> = ({ 
+export const ASCIICameraView = forwardRef(({ 
   options, 
   onAIUpdate, 
   videoElement, 
   aiEngine,
   remoteStream
-}) => {
+}: ASCIICameraViewProps, ref) => {
   const preRef = useRef<HTMLPreElement>(null);
   const remotePreRef = useRef<HTMLPreElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -32,6 +32,56 @@ export const ASCIICameraView: React.FC<ASCIICameraViewProps> = ({
   // Instance Refs
   const asciiRef = useRef<ASCIIEngine>(new ASCIIEngine());
   const latestFaceBox = useRef<any>(null);
+
+  // Expose capture logic to parent
+  useImperativeHandle(ref, () => ({
+    capturePhoto: () => {
+      if (!preRef.current) return;
+      
+      const text = preRef.current.textContent || '';
+      const lines = text.split('\n');
+      const fontSize = options.fontSize;
+      
+      // Create snapshot canvas
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      
+      // Calculate dimensions based on font
+      ctx.font = `${fontSize}px "Share Tech Mono", monospace`;
+      const charWidth = ctx.measureText('M').width;
+      const lineHeight = fontSize;
+      
+      canvas.width = lines[0].length * charWidth;
+      canvas.height = lines.length * lineHeight;
+      
+      // Background
+      ctx.fillStyle = '#000800'; // Void
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw Text
+      ctx.font = `${fontSize}px "Share Tech Mono", monospace`;
+      ctx.textBaseline = 'top';
+      
+      // Mode colors
+      const colors = {
+        Matrix: '#00ff41',
+        BW: '#ffffff',
+        Retro: '#ff8c00',
+        Color: '#00ffff'
+      };
+      ctx.fillStyle = (colors as any)[options.mode] || colors.Matrix;
+
+      lines.forEach((line, i) => {
+        ctx.fillText(line, 0, i * lineHeight);
+      });
+
+      // Download
+      const link = document.createElement('a');
+      link.download = `cyber-ascii-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  }));
 
   // Options Ref
   const optionsRef = useRef(options);
@@ -71,7 +121,7 @@ export const ASCIICameraView: React.FC<ASCIICameraViewProps> = ({
           const data = await aiEngine.detect(videoElement);
           if (data && data.box) {
             latestFaceBox.current = data.box;
-            onAIUpdate({ detected: true, confidence: 0.9 });
+            onAIUpdate({ detected: true, confidence: data.score });
           } else {
             latestFaceBox.current = null;
             onAIUpdate({ detected: false, confidence: 0 });
@@ -96,13 +146,29 @@ export const ASCIICameraView: React.FC<ASCIICameraViewProps> = ({
       const aspect = remoteStream ? 1.0 : 2.0; // Narrower if split screen
 
       // Render Local
-      if (preRef.current) {
-        const scale = 16 / fontSize;
-        const width = Math.floor(40 * scale); // Halved for split
-        const height = Math.floor(40 * scale);
+      if (preRef.current && preRef.current.parentElement && videoElement.videoWidth > 0) {
+        const container = preRef.current.parentElement;
+        const widthPx = container.clientWidth;
+        const heightPx = container.clientHeight;
+        
+        const videoAspect = videoElement.videoWidth / videoElement.videoHeight;
+        const charWidth = fontSize * 0.55; // Refined for Share Tech Mono
+        const charHeight = fontSize;
+        const charAspect = charWidth / charHeight;
+
+        // Calculate columns to fit width
+        let width = Math.floor(widthPx / charWidth);
+        // Calculate rows to maintain video aspect ratio
+        let height = Math.floor((width * charAspect) / videoAspect);
+        
+        // If it's too tall for the container, scale down
+        if (height * charHeight > heightPx) {
+          height = Math.floor(heightPx / charHeight);
+          width = Math.floor((height * videoAspect) / charAspect);
+        }
 
         const ascii = asciiRef.current.process(videoElement, {
-          width: remoteStream ? width : width * 2,
+          width,
           height,
           chars: charset,
           gain,
@@ -113,10 +179,23 @@ export const ASCIICameraView: React.FC<ASCIICameraViewProps> = ({
       }
 
       // Render Remote
-      if (remotePreRef.current && remoteVideoRef.current) {
-        const scale = 16 / fontSize;
-        const width = Math.floor(40 * scale);
-        const height = Math.floor(40 * scale);
+      if (remotePreRef.current && remotePreRef.current.parentElement && remoteVideoRef.current && remoteVideoRef.current.videoWidth > 0) {
+        const container = remotePreRef.current.parentElement;
+        const widthPx = container.clientWidth;
+        const heightPx = container.clientHeight;
+        
+        const videoAspect = remoteVideoRef.current.videoWidth / remoteVideoRef.current.videoHeight;
+        const charWidth = fontSize * 0.55;
+        const charHeight = fontSize;
+        const charAspect = charWidth / charHeight;
+
+        let width = Math.floor(widthPx / charWidth);
+        let height = Math.floor((width * charAspect) / videoAspect);
+        
+        if (height * charHeight > heightPx) {
+          height = Math.floor(heightPx / charHeight);
+          width = Math.floor((height * videoAspect) / charAspect);
+        }
 
         const ascii = asciiRef.current.process(remoteVideoRef.current, {
           width,
@@ -124,7 +203,7 @@ export const ASCIICameraView: React.FC<ASCIICameraViewProps> = ({
           chars: charset,
           gain,
           contrast,
-          faceBox: null // No AI tracking for remote peer yet
+          faceBox: null
         });
         remotePreRef.current.textContent = ascii;
       }
@@ -223,4 +302,4 @@ export const ASCIICameraView: React.FC<ASCIICameraViewProps> = ({
       <div className="vignette"></div>
     </div>
   );
-};
+});

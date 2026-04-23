@@ -37,6 +37,7 @@ function App() {
   const cameraRef = useRef<CameraModule | null>(null);
   const multiplayerRef = useRef<MultiplayerModule | null>(null);
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
+  const cameraViewRef = useRef<any>(null);
 
   // Lazy initialize refs
   if (!aiRef.current) aiRef.current = new AIEngine();
@@ -112,6 +113,41 @@ function App() {
     setMultiplayerStatus('DISCONNECTED');
   }, []);
 
+  const toggleFullScreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F11') {
+        e.preventDefault();
+        toggleFullScreen();
+      }
+    };
+
+    const handleDblClick = () => {
+      toggleFullScreen();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('dblclick', handleDblClick);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('dblclick', handleDblClick);
+    };
+  }, [toggleFullScreen]);
+
+  const handleCapture = useCallback(() => {
+    cameraViewRef.current?.capturePhoto();
+  }, []);
+
   if (!isLoaded) {
     return <CyberLoader progress={loadProgress} status={loadStatus} />;
   }
@@ -123,10 +159,12 @@ function App() {
         faceDetected={aiData.detected} 
         confidence={aiData.confidence}
         multiplayerStatus={multiplayerStatus === 'DISCONNECTED' ? 'OFFLINE' : multiplayerStatus}
+        onToggleFullScreen={toggleFullScreen}
       />
       
       <main className="content">
         <ASCIICameraView 
+          ref={cameraViewRef}
           options={options} 
           onAIUpdate={handleAIUpdate}
           videoElement={videoElement}
@@ -142,6 +180,8 @@ function App() {
         multiplayerStatus={multiplayerStatus}
         onMultiplayerAction={handleMultiplayerAction}
         onDisconnect={handleDisconnect}
+        onToggleFullScreen={toggleFullScreen}
+        onCapture={handleCapture}
       />
 
       <style>{`

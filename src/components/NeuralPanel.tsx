@@ -5,15 +5,36 @@ interface NeuralPanelProps {
   faceDetected: boolean;
   confidence: number;
   multiplayerStatus: string;
+  onToggleFullScreen: () => void;
 }
 
 export const NeuralPanel: React.FC<NeuralPanelProps> = ({ 
   aiMode, 
   faceDetected, 
   confidence,
-  multiplayerStatus
+  multiplayerStatus,
+  onToggleFullScreen
 }) => {
   const [telemetry, setTelemetry] = useState<string[]>([]);
+  const [jitterConfidence, setJitterConfidence] = useState(0);
+
+  // Neural Jitter Effect (Simulation of high-frequency targeting logic)
+  useEffect(() => {
+    if (!aiMode) {
+      setJitterConfidence(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      // Base confidence from AI, or 0.6 if searching
+      const base = faceDetected ? confidence : 0.6;
+      // Add random fluctuation between 0 and 0.15, clamped to > 50%
+      const jitter = Math.max(0.51, base + (Math.random() * 0.15 - 0.05));
+      setJitterConfidence(jitter);
+    }, 150);
+
+    return () => clearInterval(interval);
+  }, [aiMode, faceDetected, confidence]);
 
   useEffect(() => {
     const defaultLogs = [
@@ -65,23 +86,38 @@ export const NeuralPanel: React.FC<NeuralPanelProps> = ({
           </span>
         </div>
 
-        {/* ── NEURAL CONFIDENCE BAR ── */}
+        {/* ── TARGET LOCK BAR ── */}
         <div className="status-item confidence-box">
-          <span className="label">NEURAL PROBABILITY:</span>
+          <span className="label">TARGET LOCK:</span>
           <div className="confidence-track">
             <div 
               className="confidence-fill" 
-              style={{ width: `${confidence * 100}%` }}
+              style={{ 
+                width: `${aiMode ? (jitterConfidence * 100) : 0}%`,
+                opacity: aiMode ? 1 : 0.2 
+              }}
             ></div>
           </div>
-          <span className="confidence-text">{(confidence * 100).toFixed(0)}%</span>
+          <span className="confidence-text" style={{ color: aiMode ? 'var(--neon-primary)' : 'var(--text-disabled)' }}>
+            {aiMode ? `${(jitterConfidence * 100).toFixed(0)}%` : 'OFFLINE'}
+          </span>
         </div>
       </div>
+    
+      <div className="panel-right">
+        <div className="telemetry-logs">
+          {telemetry.map((log, idx) => (
+            <div key={idx} className="log-line anim-typing">{log}</div>
+          ))}
+        </div>
 
-      <div className="telemetry-logs">
-        {telemetry.map((log, idx) => (
-          <div key={idx} className="log-line anim-typing">{log}</div>
-        ))}
+        <button 
+          className="btn btn-ghost btn-compact fs-btn"
+          onClick={onToggleFullScreen}
+          title="Toggle Fullscreen [F11]"
+        >
+          <span className="fs-icon">⛶</span>
+        </button>
       </div>
 
       <style>{`
@@ -158,16 +194,35 @@ export const NeuralPanel: React.FC<NeuralPanelProps> = ({
           animation: pulse-glow 2s infinite ease-in-out;
         }
 
+        .panel-right {
+          display: flex;
+          align-items: center;
+          gap: var(--space-4);
+          min-width: 300px;
+          justify-content: flex-end;
+        }
+
         .telemetry-logs {
           font-family: var(--font-terminal);
           font-size: 10px;
           color: var(--text-ghost);
-          min-width: 250px;
           text-align: right;
         }
 
         .log-line {
           height: 14px;
+        }
+
+        .fs-btn {
+          min-width: 40px !important;
+          padding: 8px !important;
+          border-style: dashed !important;
+          font-size: 14px !important;
+        }
+
+        .fs-icon {
+          display: inline-block;
+          transform: scale(1.2);
         }
 
         @keyframes pulse-glow {
