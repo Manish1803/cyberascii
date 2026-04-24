@@ -15,6 +15,7 @@ interface ASCIICameraViewProps {
   videoElement: HTMLVideoElement | null;
   aiEngine: AIEngine;
   remoteStream: MediaStream | null;
+  isSpeakerEnabled: boolean;
 }
 
 export const ASCIICameraView = forwardRef(({ 
@@ -22,7 +23,8 @@ export const ASCIICameraView = forwardRef(({
   onAIUpdate, 
   videoElement, 
   aiEngine,
-  remoteStream
+  remoteStream,
+  isSpeakerEnabled
 }: ASCIICameraViewProps, ref) => {
   const preRef = useRef<HTMLPreElement>(null);
   const remotePreRef = useRef<HTMLPreElement>(null);
@@ -95,7 +97,7 @@ export const ASCIICameraView = forwardRef(({
       const video = document.createElement('video');
       video.srcObject = remoteStream;
       video.autoplay = true;
-      video.muted = true; // Avoid feedback
+      video.muted = true; // Muted by default to ensure total silence on join
       remoteVideoRef.current = video;
       return () => {
         video.srcObject = null;
@@ -103,6 +105,12 @@ export const ASCIICameraView = forwardRef(({
       };
     }
   }, [remoteStream]);
+
+  useEffect(() => {
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.muted = !isSpeakerEnabled;
+    }
+  }, [isSpeakerEnabled]);
 
   useEffect(() => {
     if (!videoElement) return;
