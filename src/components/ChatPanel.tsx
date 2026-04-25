@@ -74,17 +74,17 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       <style>{`
         .chat-panel {
           position: fixed;
-          right: 0;
-          top: 60px;
-          bottom: 220px;
-          width: 320px;
-          background: rgba(13, 26, 13, 0.95);
-          border-left: 2px solid var(--neon-primary);
-          box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+          right: 20px;
+          top: 80px;
+          bottom: 40px;
+          width: 380px;
+          background: rgba(9, 18, 9, 0.98);
+          border: 1px solid var(--neon-primary);
+          box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 255, 65, 0.05);
           display: flex;
           flex-direction: column;
-          z-index: 80;
-          animation: slide-in 0.3s ease-out;
+          z-index: 500;
+          animation: slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         @keyframes slide-in {
@@ -152,13 +152,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         .chat-time { color: var(--text-dim); }
 
         .chat-text {
-          padding: 8px 12px;
-          font-size: 12px;
-          background: rgba(0, 255, 65, 0.1);
-          border: 1px solid var(--green-800);
+          padding: 10px 14px;
+          font-size: 13px;
+          background: rgba(0, 255, 65, 0.05);
+          border: 1px solid var(--green-900);
           color: var(--text-primary);
-          line-height: 1.4;
+          line-height: 1.5;
           word-break: break-word;
+          font-family: var(--font-terminal);
+          clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 8px 100%, 0% calc(100% - 8px));
         }
 
         .sent .chat-text {

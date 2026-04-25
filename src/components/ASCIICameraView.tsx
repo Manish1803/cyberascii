@@ -91,26 +91,7 @@ export const ASCIICameraView = forwardRef(({
     optionsRef.current = options;
   }, [options]);
 
-  // Handle Remote Video Setup
-  useEffect(() => {
-    if (remoteStream) {
-      const video = document.createElement('video');
-      video.srcObject = remoteStream;
-      video.autoplay = true;
-      video.muted = true; // Muted by default to ensure total silence on join
-      remoteVideoRef.current = video;
-      return () => {
-        video.srcObject = null;
-        remoteVideoRef.current = null;
-      };
-    }
-  }, [remoteStream]);
 
-  useEffect(() => {
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.muted = !isSpeakerEnabled;
-    }
-  }, [isSpeakerEnabled]);
 
   useEffect(() => {
     if (!videoElement) return;
@@ -302,6 +283,19 @@ export const ASCIICameraView = forwardRef(({
               style={{ fontSize: `${options.fontSize}px` }} 
               className={`ascii-render ${options.mode}`}
             ></pre>
+            {/* Hidden video element to ensure audio playback and provide frames for ASCII rendering */}
+            <video 
+              ref={(el) => {
+                remoteVideoRef.current = el;
+                if (el && remoteStream) {
+                  el.srcObject = remoteStream;
+                  el.autoplay = true;
+                  el.muted = !isSpeakerEnabled;
+                  el.playsInline = true;
+                }
+              }}
+              style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+            />
           </div>
         )}
       </div>

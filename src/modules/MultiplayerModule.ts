@@ -116,10 +116,18 @@ export class MultiplayerModule {
   }
 
   public setAudioEnabled(enabled: boolean) {
-    if (!this.localStream) return;
-    this.localStream.getAudioTracks().forEach(track => {
+    if (!this.localStream) {
+      console.warn('[SYS] MIC_TOGGLE_FAILED: NO_LOCAL_STREAM');
+      return;
+    }
+    const audioTracks = this.localStream.getAudioTracks();
+    if (audioTracks.length === 0) {
+      console.warn('[SYS] MIC_TOGGLE_FAILED: NO_AUDIO_TRACKS_FOUND');
+      return;
+    }
+    audioTracks.forEach(track => {
       track.enabled = enabled;
-      console.log(`[SYS] MIC_${enabled ? 'ACTIVE' : 'MUTED'}`);
+      console.log(`[SYS] MIC_${enabled ? 'ACTIVE' : 'MUTED'} | TRACK_ID: ${track.id} | STATE: ${track.readyState}`);
     });
   }
 
