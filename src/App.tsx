@@ -64,7 +64,7 @@ function App() {
         });
 
         // 2. Load Camera (60-100%)
-        const video = await cameraRef.current!.initialize(640, 480, (step, p) => {
+        const video = await cameraRef.current!.initialize(640, 480, false, (step: string, p: number) => {
           if (isMounted) {
             setLoadStatus(step);
             setLoadProgress(60 + p * 0.4); // Scale to 40% (total 100%)
@@ -219,7 +219,6 @@ function App() {
         multiplayerStatus={multiplayerStatus}
         onMultiplayerAction={handleMultiplayerAction}
         onDisconnect={handleDisconnect}
-        onToggleFullScreen={toggleFullScreen}
         onCapture={handleCapture}
         isMicEnabled={isMicEnabled}
         onToggleMic={toggleMic}

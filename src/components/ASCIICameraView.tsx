@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { ASCIIEngine } from '../modules/ASCIIEngine';
 import { AIEngine } from '../modules/AIEngine';
 
@@ -132,7 +132,6 @@ export const ASCIICameraView = forwardRef(({
       if (!isMounted) return;
       
       const { fontSize, charset, gain, contrast, aiMode } = optionsRef.current;
-      const aspect = remoteStream ? 1.0 : 2.0; // Narrower if split screen
 
       // Render Local
       if (preRef.current && preRef.current.parentElement && videoElement.videoWidth > 0) {

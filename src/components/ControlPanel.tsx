@@ -21,7 +21,6 @@ interface ControlPanelProps {
   multiplayerStatus: string;
   onMultiplayerAction: (action: 'CREATE' | 'JOIN', id: string) => void;
   onDisconnect: () => void;
-  onToggleFullScreen: () => void;
   onCapture: () => void;
   isMicEnabled: boolean;
   onToggleMic: () => void;
@@ -37,7 +36,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   multiplayerStatus,
   onMultiplayerAction,
   onDisconnect,
-  onToggleFullScreen,
   onCapture,
   isMicEnabled,
   onToggleMic,
